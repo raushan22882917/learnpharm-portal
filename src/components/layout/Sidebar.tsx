@@ -12,7 +12,10 @@ import {
   ClipboardList, 
   LogOut, 
   ChevronLeft, 
-  ChevronRight
+  ChevronRight,
+  Building,
+  FileText,
+  Beaker
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
       case 'principal':
         return [
           { path: '/principal', icon: <Home size={20} />, label: 'Dashboard' },
-          { path: '/principal/college', icon: <School size={20} />, label: 'College' },
+          { path: '/principal/college', icon: <Building size={20} />, label: 'College' },
           { path: '/principal/faculty', icon: <Users size={20} />, label: 'Faculty' },
           { path: '/principal/students', icon: <GraduationCap size={20} />, label: 'Students' },
           { path: '/principal/feedback', icon: <ClipboardList size={20} />, label: 'Feedback' },
@@ -57,8 +60,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
         return [
           { path: '/student', icon: <Home size={20} />, label: 'Dashboard' },
           { path: '/student/courses', icon: <BookOpen size={20} />, label: 'My Courses' },
-          { path: '/student/practical', icon: <ClipboardList size={20} />, label: 'Practical' },
-          { path: '/student/feedback', icon: <ClipboardList size={20} />, label: 'Feedback' },
+          { path: '/student/practical', icon: <Beaker size={20} />, label: 'Practical' },
+          { path: '/student/feedback', icon: <FileText size={20} />, label: 'Feedback' },
         ];
       default:
         return [];

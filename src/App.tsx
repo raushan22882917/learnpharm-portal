@@ -16,6 +16,8 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminContent from "./pages/admin/AdminContent";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminSemesters from "./pages/admin/AdminSemesters";
+import AdminUserApproval from "./pages/admin/AdminUserApproval";
 
 // Principal pages
 import PrincipalDashboard from "./pages/principal/PrincipalDashboard";
@@ -23,18 +25,21 @@ import PrincipalCollege from "./pages/principal/PrincipalCollege";
 import PrincipalFaculty from "./pages/principal/PrincipalFaculty";
 import PrincipalStudents from "./pages/principal/PrincipalStudents";
 import PrincipalFeedback from "./pages/principal/PrincipalFeedback";
+import PrincipalPayments from "./pages/principal/PrincipalPayments";
 
 // Faculty pages
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import FacultyStudents from "./pages/faculty/FacultyStudents";
 import FacultyContent from "./pages/faculty/FacultyContent";
 import FacultyFeedback from "./pages/faculty/FacultyFeedback";
+import FacultyCsvUpload from "./pages/faculty/FacultyCsvUpload";
 
 // Student pages
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentCourses from "./pages/student/StudentCourses";
 import StudentPractical from "./pages/student/StudentPractical";
 import StudentFeedback from "./pages/student/StudentFeedback";
+import StudentCompiler from "./pages/student/StudentCompiler";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +63,8 @@ const App = () => (
               <Route path="admin/content" element={<AdminContent />} />
               <Route path="admin/analytics" element={<AdminAnalytics />} />
               <Route path="admin/settings" element={<AdminSettings />} />
+              <Route path="admin/semesters" element={<AdminSemesters />} />
+              <Route path="admin/user-approval" element={<AdminUserApproval />} />
               <Route path="admin/*" element={<Navigate to="/admin" />} />
               
               {/* Principal routes */}
@@ -66,6 +73,7 @@ const App = () => (
               <Route path="principal/faculty" element={<PrincipalFaculty />} />
               <Route path="principal/students" element={<PrincipalStudents />} />
               <Route path="principal/feedback" element={<PrincipalFeedback />} />
+              <Route path="principal/payments" element={<PrincipalPayments />} />
               <Route path="principal/*" element={<Navigate to="/principal" />} />
               
               {/* Faculty routes */}
@@ -73,6 +81,7 @@ const App = () => (
               <Route path="faculty/students" element={<FacultyStudents />} />
               <Route path="faculty/content" element={<FacultyContent />} />
               <Route path="faculty/feedback" element={<FacultyFeedback />} />
+              <Route path="faculty/upload" element={<FacultyCsvUpload />} />
               <Route path="faculty/*" element={<Navigate to="/faculty" />} />
               
               {/* Student routes */}
@@ -80,6 +89,7 @@ const App = () => (
               <Route path="student/courses" element={<StudentCourses />} />
               <Route path="student/practical" element={<StudentPractical />} />
               <Route path="student/feedback" element={<StudentFeedback />} />
+              <Route path="student/compiler" element={<StudentCompiler />} />
               <Route path="student/*" element={<Navigate to="/student" />} />
             </Route>
             

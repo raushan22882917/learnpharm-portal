@@ -13,7 +13,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
-import { LogIn, UserPlus, BookOpen, School, GraduationCap, FileText, Info } from 'lucide-react';
+import { LogIn, UserPlus, BookOpen, School, GraduationCap, FileText, Info, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Navbar: React.FC = () => {

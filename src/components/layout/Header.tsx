@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown, Bell, Settings, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, Bell, Settings, LogOut, UserPlus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -29,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarCollapsed }) => {
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-border sticky top-0 z-40 transition-all duration-300">
+    <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-border sticky top-0 z-40 transition-all duration-300">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         <div className="flex items-center">
           <button 
@@ -48,6 +49,8 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarCollapsed }) => {
         </div>
 
         <div className="hidden md:flex items-center space-x-6">
+          <ThemeToggle />
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="relative h-8 px-2">
@@ -109,7 +112,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarCollapsed }) => {
 
       {/* Mobile menu */}
       {showMobileMenu && (
-        <div className="md:hidden flex flex-col px-4 py-2 bg-background border-b space-y-2 animate-fade-in">
+        <div className="md:hidden flex flex-col px-4 py-2 bg-background border-b space-y-2 animate-fade-in dark:bg-gray-900">
+          <div className="flex justify-end mb-2">
+            <ThemeToggle />
+          </div>
+          
           {user ? (
             <div className="flex items-center py-2">
               <Avatar className="h-8 w-8 mr-2">
@@ -122,9 +129,16 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, sidebarCollapsed }) => {
               </div>
             </div>
           ) : (
-            <Button onClick={() => navigate('/')} variant="ghost" className="justify-start">
-              Sign in
-            </Button>
+            <>
+              <Button onClick={() => navigate('/')} variant="ghost" className="justify-start">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign in
+              </Button>
+              <Button onClick={() => navigate('/signup')} variant="ghost" className="justify-start">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Sign up
+              </Button>
+            </>
           )}
           
           <Button variant="ghost" className="justify-start" onClick={() => navigate('/profile')}>

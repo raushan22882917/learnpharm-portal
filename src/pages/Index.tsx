@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/layout/Navbar';
 import EnhancedFooter from '@/components/layout/EnhancedFooter';
-import LoginForm from '@/components/auth/LoginForm';
 import { Check, ArrowRight, BookOpen, Users, School, Award, BarChart, BookOpenCheck, Brain, Layers } from 'lucide-react';
 
 const Index: React.FC = () => {
@@ -63,7 +61,7 @@ const Index: React.FC = () => {
                   A comprehensive learning solution designed for pharmacy students, faculty, and administrators. Access study materials, practical content, and interactive tools to enhance your educational journey.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" onClick={() => document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                  <Button size="lg" onClick={() => navigate('/login')}>
                     Get Started
                   </Button>
                   <Button variant="outline" size="lg" onClick={() => navigate('/signup')}>
@@ -280,23 +278,6 @@ const Index: React.FC = () => {
           </div>
         </section>
 
-        {/* Login Section */}
-        <section id="login-section" className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-10">
-              <h2 className="heading-medium mb-4">Sign In to Your Account</h2>
-              <p className="text-muted-foreground max-w-md mx-auto">
-                Access your personalized dashboard based on your role.
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Don't have an account? <a href="/signup" className="text-primary hover:underline">Sign up here</a>
-              </p>
-            </div>
-            
-            <LoginForm />
-          </div>
-        </section>
-
         {/* CTA Section */}
         <section className="py-16 bg-gradient-to-r from-primary/10 to-blue-500/10 dark:from-primary/5 dark:to-blue-500/5">
           <div className="container mx-auto px-4 text-center">
@@ -308,8 +289,8 @@ const Index: React.FC = () => {
               <Button size="lg" onClick={() => navigate('/signup')}>
                 Sign Up Now
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate('/contact')}>
-                Contact Us
+              <Button variant="outline" size="lg" onClick={() => navigate('/login')}>
+                Sign In
               </Button>
             </div>
           </div>

@@ -111,7 +111,7 @@ const Navbar: React.FC = () => {
               </Button>
               <Button 
                 variant="default" 
-                onClick={() => navigate('/#login-section')}
+                onClick={() => navigate('/login')}
                 className="flex items-center gap-2"
               >
                 <LogIn className="h-4 w-4" />

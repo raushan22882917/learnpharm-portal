@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,10 +46,10 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await login(values.email, values.password, role);
+      await login(values.email, values.password);
       toast({
         title: "Login successful",
-        description: `Welcome to PharmLearn as ${role}`,
+        description: `Welcome to PharmLearn`,
       });
       navigate(roleRedirects[role]);
     } catch (error) {

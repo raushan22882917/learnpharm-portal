@@ -53,7 +53,7 @@ const SignupForm: React.FC = () => {
     try {
       // In a real app, this would create a new user account
       // For now, we'll simulate success and log in the user
-      await login(values.email, values.password, role);
+      await login(values.email, values.password);
       toast({
         title: "Account created",
         description: `Welcome to PharmLearn, ${values.name}!`,

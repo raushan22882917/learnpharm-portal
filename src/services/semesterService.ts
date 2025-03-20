@@ -10,6 +10,7 @@ export interface Semester {
   description?: string;
   status: 'active' | 'upcoming' | 'archived';
   subjects?: number;
+  is_active?: boolean;
 }
 
 export const semesterService = {

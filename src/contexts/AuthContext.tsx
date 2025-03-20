@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (email: string, password: string, role?: UserRole) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -57,7 +57,7 @@ const MOCK_USERS = {
 };
 
 // Flag to toggle between mock and real API
-const USE_MOCK_API = true; // Set to false to use the real API
+const USE_MOCK_API = false; // Set to false to use the real API
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role?: UserRole): Promise<void> => {
+  const login = async (username: string, password: string): Promise<void> => {
     setIsLoading(true);
     
     try {
@@ -88,7 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Mock implementation for development
         return new Promise((resolve, reject) => {
           setTimeout(() => {
-            if (role && MOCK_USERS[role]) {
+            // For testing, use email as username and determine role
+            const role = username.includes('admin') ? 'admin' : 
+                        username.includes('principal') ? 'principal' : 
+                        username.includes('faculty') ? 'faculty' : 'student';
+                        
+            if (MOCK_USERS[role]) {
               const mockUser = MOCK_USERS[role];
               setUser(mockUser);
               localStorage.setItem('pharm_learn_user', JSON.stringify(mockUser));
@@ -102,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // Real API implementation
         const response = await authService.login({ 
-          username: email, // Django typically uses username for auth
+          username, 
           password 
         });
         

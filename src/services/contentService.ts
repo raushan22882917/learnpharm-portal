@@ -8,12 +8,22 @@ export interface Subject {
   semester: number;
   year: string;
   topics: number;
+  description?: string;
+  is_active: boolean;
 }
 
 export interface Topic {
   id: number;
   name: string;
   subject: number;
+  description?: string;
+  is_active: boolean;
+}
+
+export interface Subtopic {
+  id: number;
+  name: string;
+  topic: number;
   description?: string;
   is_active: boolean;
 }
@@ -29,6 +39,32 @@ export interface StudyMaterial {
   content_tab?: number;
   date: string;
   size: string;
+}
+
+export interface InteractiveScript {
+  id: number;
+  study_material: number;
+  script_type: 'html' | 'javascript' | 'python';
+  script_content: string;
+  is_active: boolean;
+}
+
+export interface Feedback {
+  id: number;
+  user: number;
+  content: string;
+  study_material?: number;
+  practical?: number;
+}
+
+export interface SecuritySetting {
+  id: number;
+  disable_text_selection: boolean;
+  disable_right_click: boolean;
+  disable_keyboard_shortcuts: boolean;
+  disable_inspect_element: boolean;
+  secure_pdf_viewer: boolean;
+  secure_image_viewer: boolean;
 }
 
 export const contentService = {
@@ -83,6 +119,32 @@ export const contentService = {
     await api.delete(`/topics/${id}/`);
   },
   
+  // Subtopics
+  getAllSubtopics: async (topicId?: number) => {
+    const url = topicId ? `/subtopics/?topic=${topicId}` : '/subtopics/';
+    const response = await api.get<Subtopic[]>(url);
+    return response.data;
+  },
+  
+  getSubtopicById: async (id: number) => {
+    const response = await api.get<Subtopic>(`/subtopics/${id}/`);
+    return response.data;
+  },
+  
+  createSubtopic: async (data: Partial<Subtopic>) => {
+    const response = await api.post<Subtopic>('/subtopics/', data);
+    return response.data;
+  },
+  
+  updateSubtopic: async (id: number, data: Partial<Subtopic>) => {
+    const response = await api.put<Subtopic>(`/subtopics/${id}/`, data);
+    return response.data;
+  },
+  
+  deleteSubtopic: async (id: number) => {
+    await api.delete(`/subtopics/${id}/`);
+  },
+  
   // Study Materials
   getAllStudyMaterials: async (params?: {
     search?: string;
@@ -119,5 +181,57 @@ export const contentService = {
   
   deleteStudyMaterial: async (id: number) => {
     await api.delete(`/study-materials/${id}/`);
+  },
+  
+  // Interactive Scripts
+  getAllInteractiveScripts: async () => {
+    const response = await api.get<InteractiveScript[]>('/interactive-scripts/');
+    return response.data;
+  },
+  
+  getInteractiveScriptById: async (id: number) => {
+    const response = await api.get<InteractiveScript>(`/interactive-scripts/${id}/`);
+    return response.data;
+  },
+  
+  createInteractiveScript: async (data: Partial<InteractiveScript>) => {
+    const response = await api.post<InteractiveScript>('/interactive-scripts/', data);
+    return response.data;
+  },
+  
+  updateInteractiveScript: async (id: number, data: Partial<InteractiveScript>) => {
+    const response = await api.put<InteractiveScript>(`/interactive-scripts/${id}/`, data);
+    return response.data;
+  },
+  
+  deleteInteractiveScript: async (id: number) => {
+    await api.delete(`/interactive-scripts/${id}/`);
+  },
+  
+  // Feedback
+  getAllFeedback: async () => {
+    const response = await api.get<Feedback[]>('/feedback/');
+    return response.data;
+  },
+  
+  getFeedbackById: async (id: number) => {
+    const response = await api.get<Feedback>(`/feedback/${id}/`);
+    return response.data;
+  },
+  
+  createFeedback: async (data: Partial<Feedback>) => {
+    const response = await api.post<Feedback>('/feedback/', data);
+    return response.data;
+  },
+  
+  // Security Settings
+  getSecuritySettings: async () => {
+    const response = await api.get<SecuritySetting[]>('/security-settings/');
+    return response.data;
+  },
+  
+  updateSecuritySettings: async (id: number, data: Partial<SecuritySetting>) => {
+    const response = await api.put<SecuritySetting>(`/security-settings/${id}/`, data);
+    return response.data;
   }
 };

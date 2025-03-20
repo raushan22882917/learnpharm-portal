@@ -70,5 +70,9 @@ export const authService = {
   getCurrentUser: () => {
     const user = localStorage.getItem('pharm_learn_user');
     return user ? JSON.parse(user) : null;
+  },
+  
+  isAuthenticated: () => {
+    return !!localStorage.getItem('pharm_learn_token');
   }
 };

@@ -1,5 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../services/authService';
+import { useToast } from '@/hooks/use-toast';
 
 type UserRole = 'admin' | 'principal' | 'faculty' | 'student' | null;
 
@@ -15,13 +17,14 @@ interface AuthContextType {
   user: User | null;
   role: UserRole;
   isAuthenticated: boolean;
-  login: (email: string, password: string, role: UserRole) => Promise<void>;
+  login: (email: string, password: string, role?: UserRole) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data for demonstration
+// Used for demo/development purposes when API is not available
 const MOCK_USERS = {
   admin: {
     id: 'admin-001',
@@ -53,9 +56,13 @@ const MOCK_USERS = {
   }
 };
 
+// Flag to toggle between mock and real API
+const USE_MOCK_API = true; // Set to false to use the real API
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check for stored authentication
@@ -73,25 +80,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole): Promise<void> => {
-    // This is a mock implementation - in a real app, you would call an API
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (role && MOCK_USERS[role]) {
-          const mockUser = MOCK_USERS[role];
-          setUser(mockUser);
-          localStorage.setItem('pharm_learn_user', JSON.stringify(mockUser));
-          resolve();
-        } else {
-          reject(new Error('Invalid credentials or role'));
-        }
-      }, 800); // Simulate API delay
-    });
+  const login = async (email: string, password: string, role?: UserRole): Promise<void> => {
+    setIsLoading(true);
+    
+    try {
+      if (USE_MOCK_API) {
+        // Mock implementation for development
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            if (role && MOCK_USERS[role]) {
+              const mockUser = MOCK_USERS[role];
+              setUser(mockUser);
+              localStorage.setItem('pharm_learn_user', JSON.stringify(mockUser));
+              resolve();
+            } else {
+              reject(new Error('Invalid credentials or role'));
+            }
+            setIsLoading(false);
+          }, 800); // Simulate API delay
+        });
+      } else {
+        // Real API implementation
+        const response = await authService.login({ 
+          username: email, // Django typically uses username for auth
+          password 
+        });
+        
+        setUser(response.user);
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${response.user.name}`,
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
+    if (!USE_MOCK_API) {
+      authService.logout();
+    }
     setUser(null);
     localStorage.removeItem('pharm_learn_user');
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
   };
 
   if (isLoading) {
@@ -105,7 +148,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: user?.role || null,
         isAuthenticated: !!user,
         login,
-        logout
+        logout,
+        isLoading
       }}
     >
       {children}

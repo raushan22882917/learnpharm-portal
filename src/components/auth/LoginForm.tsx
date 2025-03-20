@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +27,7 @@ const roleRedirects: Record<UserRole, string> = {
 };
 
 const LoginForm: React.FC = () => {
-  const { login } = useAuth();
+  const { login, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [role, setRole] = useState<UserRole>('student');
@@ -107,7 +106,6 @@ const LoginForm: React.FC = () => {
             </TabsTrigger>
           </TabsList>
           
-          {/* We'll use the same form for all roles but you could have different forms if needed */}
           {['student', 'faculty', 'principal', 'admin'].map((roleValue) => (
             <TabsContent key={roleValue} value={roleValue}>
               <Form {...form}>
@@ -153,7 +151,7 @@ const LoginForm: React.FC = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full" disabled={isLoading || authLoading}>
                     {isLoading ? "Signing in..." : "Sign in"}
                   </Button>
                 </form>

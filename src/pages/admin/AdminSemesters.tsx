@@ -1,50 +1,76 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Calendar, Search, Edit, Trash2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { semesterService, Semester } from '@/services/semesterService';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminSemesters: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
-  const [activeSemester, setActiveSemester] = useState<any>(null);
-  
-  // Mock data for semesters
-  const [semesters, setSemesters] = useState([
-    { 
-      id: 1, 
-      name: 'Semester 1 2023-24', 
-      startDate: '2023-08-01', 
-      endDate: '2023-12-15',
-      year: '2023-24',
-      description: 'First semester of B.Pharm curriculum',
-      status: 'active',
-      subjects: 5
-    },
-    { 
-      id: 2, 
-      name: 'Semester 2 2023-24', 
-      startDate: '2024-01-10', 
-      endDate: '2024-05-30',
-      year: '2023-24',
-      description: 'Second semester of B.Pharm curriculum',
-      status: 'upcoming',
-      subjects: 6
-    },
-    { 
-      id: 3, 
-      name: 'Semester 1 2022-23', 
-      startDate: '2022-08-01', 
-      endDate: '2022-12-15',
-      year: '2022-23',
-      description: 'First semester of B.Pharm curriculum',
-      status: 'archived',
-      subjects: 5
+  const [activeSemester, setActiveSemester] = useState<Semester | null>(null);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    startDate: '',
+    endDate: '',
+    year: '',
+    description: '',
+    status: 'upcoming'
+  });
+
+  useEffect(() => {
+    fetchSemesters();
+  }, []);
+
+  useEffect(() => {
+    if (activeSemester) {
+      setFormData({
+        name: activeSemester.name || '',
+        startDate: activeSemester.startDate || '',
+        endDate: activeSemester.endDate || '',
+        year: activeSemester.year || '',
+        description: activeSemester.description || '',
+        status: activeSemester.status || 'upcoming'
+      });
+    } else {
+      setFormData({
+        name: '',
+        startDate: '',
+        endDate: '',
+        year: '',
+        description: '',
+        status: 'upcoming'
+      });
     }
-  ]);
+  }, [activeSemester]);
+
+  const fetchSemesters = async () => {
+    setIsLoading(true);
+    try {
+      const data = await semesterService.getAll();
+      setSemesters(data);
+    } catch (error) {
+      console.error('Error fetching semesters:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load semesters. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCreateSemester = () => {
     setDialogMode('create');
@@ -52,17 +78,76 @@ const AdminSemesters: React.FC = () => {
     setOpenDialog(true);
   };
 
-  const handleEditSemester = (semester: any) => {
+  const handleEditSemester = (semester: Semester) => {
     setDialogMode('edit');
     setActiveSemester(semester);
     setOpenDialog(true);
   };
 
-  const handleSaveSemester = (event: React.FormEvent) => {
-    event.preventDefault();
-    // In a real implementation, this would save to backend
-    setOpenDialog(false);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
   };
+
+  const handleSaveSemester = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      if (dialogMode === 'create') {
+        await semesterService.create(formData);
+        toast({
+          title: 'Success',
+          description: 'Semester created successfully',
+        });
+      } else if (dialogMode === 'edit' && activeSemester) {
+        await semesterService.update(activeSemester.id, formData);
+        toast({
+          title: 'Success',
+          description: 'Semester updated successfully',
+        });
+      }
+      
+      fetchSemesters();
+      setOpenDialog(false);
+    } catch (error) {
+      console.error('Error saving semester:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save semester. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteSemester = async (id: number) => {
+    if (window.confirm('Are you sure you want to delete this semester? This action cannot be undone.')) {
+      try {
+        await semesterService.delete(id);
+        toast({
+          title: 'Success',
+          description: 'Semester deleted successfully',
+        });
+        fetchSemesters();
+      } catch (error) {
+        console.error('Error deleting semester:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to delete semester. Please try again.',
+          variant: 'destructive'
+        });
+      }
+    }
+  };
+
+  // Filter semesters based on search query and status filter
+  const filteredSemesters = semesters.filter(semester => {
+    const matchesSearch = semester.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = activeFilter === null || semester.status === activeFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -86,75 +171,122 @@ const AdminSemesters: React.FC = () => {
             type="search"
             placeholder="Search semesters..."
             className="pl-8 w-full"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          <Button variant="outline" size="sm">All</Button>
-          <Button variant="outline" size="sm">Active</Button>
-          <Button variant="outline" size="sm">Upcoming</Button>
-          <Button variant="outline" size="sm">Archived</Button>
+          <Button 
+            variant={activeFilter === null ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter(null)}
+          >
+            All
+          </Button>
+          <Button 
+            variant={activeFilter === 'active' ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter('active')}
+          >
+            Active
+          </Button>
+          <Button 
+            variant={activeFilter === 'upcoming' ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter('upcoming')}
+          >
+            Upcoming
+          </Button>
+          <Button 
+            variant={activeFilter === 'archived' ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveFilter('archived')}
+          >
+            Archived
+          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6">
-        {semesters.map((semester) => (
-          <Card key={semester.id} className={semester.status === 'archived' ? 'opacity-70' : ''}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-4">
-                    <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle>{semester.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">Year: {semester.year}</p>
-                  </div>
-                </div>
-                <div className={`px-2 py-1 text-xs rounded-full ${
-                  semester.status === 'active' 
-                    ? 'bg-green-100 text-green-800' 
-                    : semester.status === 'upcoming'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
-                  {semester.status.charAt(0).toUpperCase() + semester.status.slice(1)}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-4 justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">{semester.description}</p>
-                  <div className="flex gap-8 mt-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Start Date</p>
-                      <p className="text-sm font-medium">{semester.startDate}</p>
+      {isLoading && !openDialog ? (
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          {filteredSemesters.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-10">
+                <Calendar className="h-10 w-10 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground text-lg">No semesters found</p>
+                <p className="text-muted-foreground text-sm">Try adjusting your search or filters</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredSemesters.map((semester) => (
+              <Card key={semester.id} className={semester.status === 'archived' ? 'opacity-70' : ''}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                        <Calendar className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle>{semester.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">Year: {semester.year}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">End Date</p>
-                      <p className="text-sm font-medium">{semester.endDate}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Subjects</p>
-                      <p className="text-sm font-medium">{semester.subjects}</p>
+                    <div className={`px-2 py-1 text-xs rounded-full ${
+                      semester.status === 'active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : semester.status === 'upcoming'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {semester.status.charAt(0).toUpperCase() + semester.status.slice(1)}
                     </div>
                   </div>
-                </div>
-                <div className="flex gap-2 mt-4 md:mt-0">
-                  <Button onClick={() => handleEditSemester(semester)} variant="outline" size="sm">
-                    <Edit className="h-4 w-4 mr-1" /> Edit
-                  </Button>
-                  {semester.status !== 'active' && (
-                    <Button variant="outline" size="sm" className="text-red-600">
-                      <Trash2 className="h-4 w-4 mr-1" /> Delete
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col md:flex-row gap-4 justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">{semester.description}</p>
+                      <div className="flex gap-8 mt-2">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Start Date</p>
+                          <p className="text-sm font-medium">{semester.startDate || 'Not set'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">End Date</p>
+                          <p className="text-sm font-medium">{semester.endDate || 'Not set'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Subjects</p>
+                          <p className="text-sm font-medium">{semester.subjects || 0}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4 md:mt-0">
+                      <Button onClick={() => handleEditSemester(semester)} variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-1" /> Edit
+                      </Button>
+                      {semester.status !== 'active' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-red-600"
+                          onClick={() => handleDeleteSemester(semester.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" /> Delete
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
 
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="sm:max-w-[525px]">
@@ -173,7 +305,8 @@ const AdminSemesters: React.FC = () => {
                 <Input
                   id="name"
                   placeholder="e.g., Semester 1 2023-24"
-                  defaultValue={activeSemester?.name || ''}
+                  value={formData.name}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -183,8 +316,8 @@ const AdminSemesters: React.FC = () => {
                   <Input
                     id="startDate"
                     type="date"
-                    defaultValue={activeSemester?.startDate || ''}
-                    required
+                    value={formData.startDate}
+                    onChange={handleInputChange}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -192,8 +325,8 @@ const AdminSemesters: React.FC = () => {
                   <Input
                     id="endDate"
                     type="date"
-                    defaultValue={activeSemester?.endDate || ''}
-                    required
+                    value={formData.endDate}
+                    onChange={handleInputChange}
                   />
                 </div>
               </div>
@@ -202,7 +335,8 @@ const AdminSemesters: React.FC = () => {
                 <Input
                   id="year"
                   placeholder="e.g., 2023-24"
-                  defaultValue={activeSemester?.year || ''}
+                  value={formData.year}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -211,7 +345,8 @@ const AdminSemesters: React.FC = () => {
                 <Textarea
                   id="description"
                   placeholder="Describe this semester..."
-                  defaultValue={activeSemester?.description || ''}
+                  value={formData.description}
+                  onChange={handleInputChange}
                   className="resize-none"
                   rows={3}
                 />
@@ -221,7 +356,8 @@ const AdminSemesters: React.FC = () => {
                 <select 
                   id="status" 
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  defaultValue={activeSemester?.status || 'upcoming'}
+                  value={formData.status}
+                  onChange={handleInputChange}
                 >
                   <option value="active">Active</option>
                   <option value="upcoming">Upcoming</option>
@@ -233,7 +369,9 @@ const AdminSemesters: React.FC = () => {
               <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
                 Cancel
               </Button>
-              <Button type="submit">Save Semester</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Saving...' : 'Save Semester'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

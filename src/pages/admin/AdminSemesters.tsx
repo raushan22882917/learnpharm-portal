@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,8 +18,14 @@ const AdminSemesters: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    startDate: string;
+    endDate: string;
+    year: string;
+    description: string;
+    status: 'active' | 'upcoming' | 'archived';
+  }>({
     name: '',
     startDate: '',
     endDate: '',
@@ -86,7 +91,15 @@ const AdminSemesters: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [id]: value }));
+    
+    if (id === 'status') {
+      setFormData(prev => ({ 
+        ...prev, 
+        [id]: value as 'active' | 'upcoming' | 'archived'
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [id]: value }));
+    }
   };
 
   const handleSaveSemester = async (event: React.FormEvent) => {
@@ -142,7 +155,6 @@ const AdminSemesters: React.FC = () => {
     }
   };
 
-  // Filter semesters based on search query and status filter
   const filteredSemesters = semesters.filter(semester => {
     const matchesSearch = semester.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = activeFilter === null || semester.status === activeFilter;
